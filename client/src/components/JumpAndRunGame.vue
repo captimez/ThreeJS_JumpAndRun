@@ -1,5 +1,5 @@
 <template>
-    <canvas ref="container" @click="lockPointer"></canvas>
+    <canvas ref="container"></canvas>
 </template>
   
 <script setup>
@@ -17,10 +17,8 @@ const speed = 0.1;
 const gravity = 0.01;
 let velocityY = 0;
 let isJumping = false;
+const cameraFollowThreshold = 0.4;
 
-let yaw = 0;
-let pitch = 0;
-const mouseSensitivity = 0.002;
 
 function updateRenderer() {
     if (renderer) {
@@ -41,41 +39,94 @@ watch(aspectRatio, () => {
     updateCamera();
 });
 
+const ground = new THREE.Mesh(
+    new THREE.BoxGeometry(10,0.1,1),
+    new THREE.MeshBasicMaterial({ color: 0x4339c9})
+);
+ground.position.y = -0.5;
+
 const sphere = new THREE.Mesh(
-    new THREE.SphereGeometry(1, 20, 20),
-    new THREE.MeshBasicMaterial({ color: 0x009090 })
+    new THREE.SphereGeometry(0.5, 20, 20),
+    new THREE.MeshBasicMaterial({ color: 0x585858  })
 );
 
+const obstacles = [];
+const obstacleSpeed = 0.05; // Speed at which obstacles move toward the player
+const spawnInterval = 1000; // Milliseconds between each obstacle spawn
+
+function createObstacle() {
+  const obstacle = new THREE.Mesh(
+    new THREE.BoxGeometry(0.5, 0.5, 0.5),
+    new THREE.MeshBasicMaterial({ color: 0xff0000 }) // Red color for visibility
+  );
+
+  // Position obstacle randomly within a certain range, and off-screen to the right
+  obstacle.position.set(camera.position.x + 10, Math.random() * 2, 0);
+  
+  // Add to the scene and to obstacles array
+  scene.add(obstacle);
+  obstacles.push(obstacle);
+}
+
+// Start generating obstacles at regular intervals
+setInterval(createObstacle, spawnInterval);
+
+function checkCollision(obj1, obj2) {
+  const obj1Box = new THREE.Box3().setFromObject(obj1);
+  const obj2Box = new THREE.Box3().setFromObject(obj2);
+  return obj1Box.intersectsBox(obj2Box);
+}
+
+const lerp = (start, end, amt) => (1-amt) * start + amt * end;
 function animate() {
     if (renderer && scene && camera) {
+        //Obstacles
+        // Move each obstacle towards the player
+        obstacles.forEach((obstacle, index) => {
+            obstacle.position.x -= obstacleSpeed;
+
+            // Check for collision with the player
+            if (checkCollision(obstacle, sphere)) {
+            console.log("Collision detected!");
+            // Handle collision (e.g., end game, reduce life, etc.)
+            }
+
+            // Remove obstacles that are off-screen (e.g., to the left of the player’s camera view)
+            if (obstacle.position.x < camera.position.x - 10) {
+            scene.remove(obstacle);
+            obstacles.splice(index, 1);
+            }
+        });
+
+
+        //camera.position.x += 0.005
+        // Only move the camera if the player moves past the threshold
+        if (sphere.position.x > camera.position.x - cameraFollowThreshold) {
+            camera.position.x = lerp(camera.position.x, sphere.position.x - cameraFollowThreshold, 0.1);
+        }if(sphere.position.x < camera.position.x + cameraFollowThreshold){
+            camera.position.x = lerp(camera.position.x, sphere.position.x + cameraFollowThreshold, 0.1);
+        }
         // Bewegung in X- und Z-Richtung basierend auf Tasteneingaben
-        if (move.forward) camera.position.z -= speed;
-        if (move.backward) camera.position.z += speed;
-        if (move.left) camera.position.x -= speed;
-        if (move.right) camera.position.x += speed;
+        if (move.left) sphere.position.x -= speed;
+        if (move.right) sphere.position.x += speed;
 
         // Jump-Mechanik in Y-Richtung
         if (move.jump && !isJumping) {
-        velocityY = 0.2; // Anfangsgeschwindigkeit des Sprungs
+        velocityY = 0.3; // Anfangsgeschwindigkeit des Sprungs
         isJumping = true;
         }
 
         // Schwerkraft anwenden
         if (isJumping) {
         velocityY -= gravity; // Schwerkraft verlangsamt den Aufstieg und initiiert den Fall
-        camera.position.y += velocityY;
+        sphere.position.y += velocityY;
 
         // Landen auf y = 0
-        if (camera.position.y <= 0) {
-            camera.position.y = 0;
+        if (sphere.position.y <= 0) {
+            sphere.position.y = 0;
             isJumping = false; // Sprung zurücksetzen
         }
         }
-
-        // Yaw und Pitch anwenden, um Kamera-Rotation zu steuern
-        camera.rotation.y = yaw;
-        camera.rotation.x = pitch;
-
         renderer.render(scene, camera);
     }
 }
@@ -120,26 +171,18 @@ function handleKeyUp(event) {
     }
 }
 
-function lockPointer() {
-    container.value.requestPointerLock();
-}
 
-function handleMouseMove(event) {
-    if (document.pointerLockElement === container.value) {
-        yaw -= event.movementX * mouseSensitivity;
-        pitch -= event.movementY * mouseSensitivity;
-        pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch)); // Limit für Pitch, um Überkopf-Ansicht zu verhindern
-    }
-}
+
 
 onMounted(() => {
     renderer = new THREE.WebGLRenderer({ canvas: container.value });
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(75, aspectRatio.value, 0.1, 1000);
+    scene.back
 
-    scene.add(sphere);
-    camera.position.z = 5;
-    camera.position.y = 0; // Startposition am Boden
+    scene.add(sphere,ground);
+    camera.position.z = 8;
+    camera.position.y = 2; // Startposition am Boden
 
     updateRenderer();
 
@@ -149,13 +192,11 @@ onMounted(() => {
     // Event-Listener für Tasten und Maus hinzufügen
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
-    window.addEventListener('mousemove', handleMouseMove);
 });
 
 onBeforeUnmount(() => {
     window.removeEventListener('keydown', handleKeyDown);
     window.removeEventListener('keyup', handleKeyUp);
-    window.removeEventListener('mousemove', handleMouseMove);
 });
 </script>
 
