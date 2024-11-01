@@ -13,11 +13,13 @@ const aspectRatio = computed(() => width.value / height.value);
 
 let renderer, scene, camera;
 const move = { forward: false, backward: false, left: false, right: false, jump: false };
-const speed = 0.1;
-const gravity = 0.01;
+const speed = 0.05;
+const gravity = 0.005;
 let velocityY = 0;
 let isJumping = false;
 const cameraFollowThreshold = 0.4;
+
+let doubleJumped = false;
 
 
 function updateRenderer() {
@@ -77,6 +79,10 @@ function checkCollision(obj1, obj2) {
   return obj1Box.intersectsBox(obj2Box);
 }
 
+const groundWidth = ground.geometry.parameters.width;
+const groundLeftEdge = ground.position.x - groundWidth / 2;
+const groundRightEdge = ground.position.x + groundWidth / 2;
+
 const lerp = (start, end, amt) => (1-amt) * start + amt * end;
 function animate() {
     if (renderer && scene && camera) {
@@ -98,7 +104,7 @@ function animate() {
             }
         });
 
-
+         const onPlatform = sphere.position.x >= groundLeftEdge && sphere.position.x <= groundRightEdge;
         //camera.position.x += 0.005
         // Only move the camera if the player moves past the threshold
         if (sphere.position.x > camera.position.x - cameraFollowThreshold) {
@@ -112,20 +118,29 @@ function animate() {
 
         // Jump-Mechanik in Y-Richtung
         if (move.jump && !isJumping) {
-        velocityY = 0.3; // Anfangsgeschwindigkeit des Sprungs
-        isJumping = true;
+            velocityY = 0.3 ; // Anfangsgeschwindigkeit des Sprungs
+            isJumping = true;
+        }else if(move.jump && isJumping && !doubleJumped){
+            doubleJumped = true;
+            velocityY = 0.3;
+            
         }
 
         // Schwerkraft anwenden
-        if (isJumping) {
-        velocityY -= gravity; // Schwerkraft verlangsamt den Aufstieg und initiiert den Fall
-        sphere.position.y += velocityY;
+        if (!onPlatform || isJumping) {
+            velocityY -= gravity; // Schwerkraft anwenden
+            sphere.position.y += velocityY;
 
-        // Landen auf y = 0
-        if (sphere.position.y <= 0) {
-            sphere.position.y = 0;
-            isJumping = false; // Sprung zurücksetzen
-        }
+            // Prüfen, ob die Kugel den Boden erreicht
+            if (onPlatform && sphere.position.y <= ground.position.y + 0.5) {
+                sphere.position.y = ground.position.y + 0.5; // Auf Plattform landen
+                isJumping = false; // Springen zurücksetzen
+                velocityY = 0; // Geschwindigkeit zurücksetzen
+            }
+        } else {
+            // Wenn die Kugel auf der Plattform ist und nicht springt
+            sphere.position.y = ground.position.y + 0.5; // Auf Plattformhöhe halten
+            velocityY = 0; // Vertikale Geschwindigkeit auf 0 setzen
         }
         renderer.render(scene, camera);
     }
@@ -181,7 +196,7 @@ onMounted(() => {
     scene.back
 
     scene.add(sphere,ground);
-    camera.position.z = 8;
+    camera.position.z = 10;
     camera.position.y = 2; // Startposition am Boden
 
     updateRenderer();
