@@ -15,9 +15,11 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(req -> req.anyRequest().permitAll())
-                .cors(c -> c.configurationSource(webConfiguration));
+                .csrf(AbstractHttpConfigurer::disable) // CSRF für WebSocket deaktivieren
+                .authorizeHttpRequests(req -> req
+                        .requestMatchers("/ws/**").permitAll() // WebSocket-Endpunkt erlauben
+                        .anyRequest().permitAll()) // Alle anderen Anfragen erlauben
+                .cors(c -> c.configurationSource(webConfiguration)); // CORS-Konfiguration anwenden
         return httpSecurity.build();
     }
 }

@@ -13,12 +13,14 @@ public class StompWebMessageBrokerConfiguration implements WebSocketMessageBroke
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         registry.enableSimpleBroker("/topic");
+        registry.setApplicationDestinationPrefixes("/app");
     }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/stompbroker")
-            .setAllowedOrigins("*");
+        registry.addEndpoint("/ws") // WebSocket-Endpunkt
+                .setAllowedOrigins("*"); // Erlaubte Ursprünge
+                
     }
     
 }

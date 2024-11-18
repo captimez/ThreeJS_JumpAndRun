@@ -8,11 +8,20 @@
 </template>
 <script setup>
 import axios from 'axios';
+import { useLobbyStore } from '../stores/lobbyStore';
+import router from '../router/router';
+
+const lobbyStore = useLobbyStore();
+
 async function createLobby(){
     try{
         const response = await axios.post(`http://localhost:8080/api/lobby/create?hostId=${sessionStorage.getItem('playerId')}`,{
             method: 'POST',
         })
+
+        lobbyStore.setLobbyId(response.data.id)
+        router.push(`lobby/${response.data.id}`)
+
         if(response){
             console.log(response.data)
         }

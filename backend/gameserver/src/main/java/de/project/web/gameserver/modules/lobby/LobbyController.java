@@ -1,10 +1,19 @@
 package de.project.web.gameserver.modules.lobby;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import java.util.List;
+
+import de.project.web.gameserver.modules.player.Player;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,11 +27,14 @@ public class LobbyController {
     
     @Autowired
     private LobbyService lobbyService;
+    @Autowired
+    private LobbyMessagingService messagingService;
+    private static final Logger logger = LoggerFactory.getLogger(LobbyController.class);
+    
 
     @PostMapping("/create")
     public Lobby createLobby(@RequestParam String hostId) {
-        Lobby lobby = createLobby(hostId);
-        lobby.getPlayers().add(hostId);
+        Lobby lobby = lobbyService.createLobby(hostId);
 
         return lobby;  
     }
@@ -41,6 +53,18 @@ public class LobbyController {
     @PostMapping("/start")
     public void startGame(@RequestParam String lobbyId) {
         lobbyService.startGame(lobbyId);
+    }
+
+    //Websocket Management
+    @MessageMapping("/lobby/{lobbyid}/join")
+    @SendTo("topic/lobby/{lobbyid}")
+    public void playerJoinLobby(Player player, @DestinationVariable String lobbyid){
+
+        logger.info("Websocket request received" + player.getPlayerId());
+        lobbyService.joinLobby(player.getPlayerId(), lobbyid);
+        List<String> players = lobbyService.getPlayersInLobby(lobbyid);
+        System.out.println("Sending updated player list: " + players);
+        messagingService.sendPlayerList(lobbyid, players);
     }
     
     

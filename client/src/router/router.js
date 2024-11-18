@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import JumpAndRunGame from '../components/JumpAndRunGame.vue'
 import StartView from '../views/StartView.vue'
 import HomeView from '../views/HomeView.vue'
+import Lobby from '../components/lobby/Lobby.vue'
 
 
 const router = createRouter({
@@ -14,13 +15,17 @@ const router = createRouter({
     },
     {
       path:'/lobby',
-      name: 'Projekte',
+      name: 'CreateLobby',
       component: HomeView,
     },
     {
       path:'/game',
       name: 'Analyse',
       component: JumpAndRunGame,
+    },{
+      path:'/lobby/:id',
+      name: 'lobby',
+      component: Lobby,
     }
   ]
 })
