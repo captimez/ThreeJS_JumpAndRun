@@ -40,9 +40,9 @@ public class LobbyController {
     }
     
     @PostMapping("/join")
-    public Lobby joinLobby(@RequestParam String lobbyId, @RequestParam String playerId) {
+    public Lobby joinLobby(@RequestParam String lobbyId, @RequestParam String playerId, @RequestParam String playerName) {
         
-        return lobbyService.joinLobby(playerId, lobbyId);
+        return lobbyService.joinLobby(playerId, playerName, lobbyId);
     }
     
     @GetMapping("/{lobbyId}")
@@ -61,8 +61,8 @@ public class LobbyController {
     public void playerJoinLobby(Player player, @DestinationVariable String lobbyid){
 
         logger.info("Websocket request received" + player.getPlayerId());
-        lobbyService.joinLobby(player.getPlayerId(), lobbyid);
-        List<String> players = lobbyService.getPlayersInLobby(lobbyid);
+        lobbyService.joinLobby(player.getPlayerId(), player.getPlayerName(), lobbyid);
+        List<Player> players = lobbyService.getPlayersInLobby(lobbyid);
         System.out.println("Sending updated player list: " + players);
         messagingService.sendPlayerList(lobbyid, players);
     }

@@ -2,8 +2,9 @@
     <div>
         <h1>Lobby ID: {{ lobbyId }}</h1>
         <ul>
-            <li v-for="player in players" :key="player.id"> 
-                {{ player.name }}
+            <li v-for="player in players" 
+                class="player-list"> 
+                {{ player.playerName }}
             </li>
         </ul>
     </div>
@@ -21,25 +22,13 @@ const lobbyId = route.params["id"]; // Lobby-ID aus der URL
 const players = computed(() => lobbyStore.players); // Reaktive Bindung zur Spieler-Liste
 
 onMounted(() => {
-    stompClient.onConnect = () => {
-        console.log('STOMP connected in Lobby.vue');
-        // Spieler-Liste abonnieren
-        subscribeToLobby(lobbyId, (players) => {
-            console.log(players)
-        });
-
-        sendMessage(`/app/lobby/${lobbyId}/join`,{
-            playerId: sessionStorage.getItem('playerId'),
-        });
-    };
-
-    // Verbindung starten (falls nicht aktiv)
-    if (!stompClient.connected) {
-        stompClient.activate();
-    }
+    lobbyStore.initWebsocket(lobbyId);
 });
 </script>
 
 <style scoped>
 /* Füge hier dein CSS hinzu */
+.player-list{
+    color: white;
+}
 </style>

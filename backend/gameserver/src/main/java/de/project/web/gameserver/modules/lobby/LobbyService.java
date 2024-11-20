@@ -31,10 +31,12 @@ public class LobbyService {
         return lobby;
     }
 
-    public Lobby joinLobby(String playerId, String lobbyId){
+    public Lobby joinLobby(String playerId, String playerName, String lobbyId){
         Lobby lobby = lobbies.get(lobbyId);
         if(lobby != null && !lobby.isGameStarted()){
-            lobby.getPlayers().add(playerId);
+            Player newPlayer = new Player(playerId, playerName);
+            lobby.getPlayers().add(newPlayer);
+
         }
 
         Logger.info("Player joined! Current Lobby Players: " + lobby.getPlayers());
@@ -53,7 +55,7 @@ public class LobbyService {
         }
     }
 
-    public List<String> getPlayersInLobby(String lobbyId) {
+    public List<Player> getPlayersInLobby(String lobbyId) {
         return lobbies.get(lobbyId).getPlayers();
     }
 }
