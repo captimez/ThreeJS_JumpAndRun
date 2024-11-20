@@ -1,6 +1,6 @@
 <template>
         <div class="form">
-            <input class="name-input" v-model="playerName" placeholder="Nickname" /><br>
+            <input class="name-input" v-model="playerNameInput" placeholder="Nickname" /><br>
             <button class="enter-button" @click="registerPlayer">Play</button>
         </div>
 </template>
@@ -12,11 +12,11 @@ import router from '../../router/router';
 import { usePlayerStore } from '../../stores/playerStore';
   
 const playerStore = usePlayerStore();
-const playerName = ref('');
+const playerNameInput = ref('');
   
 async function registerPlayer() {
     try{
-        const response = await axios.post(`http://localhost:8080/api/player/create?name=${playerName.value}`,{
+        const response = await axios.post(`http://localhost:8080/api/player/create?name=${playerNameInput.value}`,{
             method: 'POST',
             withCredentials: true,
         });
