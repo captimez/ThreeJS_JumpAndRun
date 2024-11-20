@@ -9,7 +9,9 @@
 import { ref } from 'vue';
 import axios, { AxiosError } from 'axios';
 import router from '../../router/router';
+import { usePlayerStore } from '../../stores/playerStore';
   
+const playerStore = usePlayerStore();
 const playerName = ref('');
   
 async function registerPlayer() {
@@ -19,8 +21,13 @@ async function registerPlayer() {
             withCredentials: true,
         });
         if(response){
-            sessionStorage.setItem('playerId', response.data.playerId)
-            router.push('/lobby')
+            const { playerId, playerName, level} =  response.data;
+            
+            playerStore.setPlayerId(playerId),
+            playerStore.setPlayerName(playerName);
+            playerStore.setPlayerLevel(level);
+            
+            router.push('/lobby');
         }
         console.log(response.data)
     }catch(err){    
