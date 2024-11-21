@@ -7,15 +7,23 @@ export const usePlayerStore = defineStore('player', {
         level: 0
     }),
     actions: {
-        setPlayerName(playerName) {
+        setPlayer(playerId,playerName,level){
+            this.playerId = playerId;
             this.playerName = playerName;
-        },
-        setPlayerId(playerId) {
-            this.playerId =  playerId;
-        },
-        setPlayerLevel(level){
             this.level = level;
+
+            sessionStorage.setItem("playerStore", JSON.stringify({ playerId,playerName,level}))
         },
+
+        restorePlayer(){
+            const player = sessionStorage.getItem('playerStore');
+
+            if(player){
+                this.playerId = player.playerId;
+                this.playerName = player.playerName;
+                this.level = player.level;
+            }
+        }
         
     },
 });

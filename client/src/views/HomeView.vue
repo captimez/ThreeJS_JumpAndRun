@@ -14,13 +14,16 @@ import axios from 'axios';
 import { ref } from 'vue'
 import { useLobbyStore } from '../stores/lobbyStore';
 import router from '../router/router';
+import { usePlayerStore } from '../stores/playerStore';
 
 const lobbyStore = useLobbyStore();
+const playerStore = usePlayerStore();
 const lobbyId = ref("");
 
 async function createLobby(){
     try{
-        const response = await axios.post(`http://localhost:8080/api/lobby/create?hostId=${sessionStorage.getItem('playerId')}`,{
+        const { playerId, playerName, level} = sessionStorage.getItem('player');
+        const response = await axios.post(`http://localhost:8080/api/lobby/create?hostId=${playerId}`,{
             method: 'POST',
         })
 
