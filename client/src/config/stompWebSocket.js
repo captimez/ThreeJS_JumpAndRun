@@ -1,6 +1,6 @@
 import { Client } from '@stomp/stompjs';
 import { useLobbyStore } from '../stores/lobbyStore';
-
+import { ref } from 'vue';
 
 
 const stompClient = new Client({
@@ -25,9 +25,9 @@ function subscribeToLobby(lobbyId,callback) {
     console.error('Lobby ID is required to subscribe.');
     return;
   }
-  stompClient.subscribe(`/topic/lobby/${lobbyId}`, (message) => {
-    callback(JSON.parse(message.body)); // Nachricht als JSON an den Callback übergeben
-  });
+    stompClient.subscribe(`/topic/lobby/${lobbyId}`, (message) => {
+      callback(JSON.parse(message.body)); // Nachricht als JSON an den Callback übergeben
+    });
 }
 
 // Funktion zum Senden von Nachrichten

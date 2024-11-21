@@ -33,13 +33,23 @@ public class LobbyService {
 
     public Lobby joinLobby(String playerId, String playerName, String lobbyId){
         Lobby lobby = lobbies.get(lobbyId);
+        List<Player>  players = lobby.getPlayers();
+        Boolean playerInLobby = false;
+
         if(lobby != null && !lobby.isGameStarted()){
             Player newPlayer = new Player(playerId, playerName);
-            lobby.getPlayers().add(newPlayer);
+            playerInLobby = players.stream()
+                           .anyMatch(lobbyPlayer -> lobbyPlayer.getPlayerId().equals(newPlayer.getPlayerId()));
+            if(!playerInLobby){
+                lobby.getPlayers().add(newPlayer);
+                Logger.info("Player joined! Current Lobby Players: " + lobby.getPlayers());
+            }
+            else{
+                Logger.info("Player already in Lobby!");
+            }
 
         }
-
-        Logger.info("Player joined! Current Lobby Players: " + lobby.getPlayers());
+        
         return lobby;
     }
 

@@ -6,6 +6,7 @@ export const useLobbyStore = defineStore('lobby', {
     state: () => ({
         players: [], // Spieler-Liste
         lobbyId: null,
+        connected: false,
     }),
     actions: {
         setPlayers(players) {
@@ -23,18 +24,23 @@ export const useLobbyStore = defineStore('lobby', {
         initWebsocket(lobbyId){
             try{
                 stompClient.onConnect = () => {
-                    const playerStore = usePlayerStore();
+                    const player = JSON.parse(sessionStorage.getItem('player'));
+                    console.log(player.playerId)
                     console.log('STOMP connected in Lobby.vue');
                     // Spieler-Liste abonnieren
-                    subscribeToLobby(lobbyId, (players) => {
-                        this.players = players;
-                        console.log(players)
-                    });
-            
-                    sendMessage(`/app/lobby/${lobbyId}/join`,{
-                        playerName:  playerStore.playerName,
-                        playerId: playerStore.playerId,
-                    });
+                    if(!this.connected){
+                        subscribeToLobby(lobbyId, (players) => {
+                            this.players = players;
+                            this.connected = true;
+                            console.log(players)
+    
+                        });
+                
+                        sendMessage(`/app/lobby/${lobbyId}/join`,{
+                            playerName:  player.playerName,
+                            playerId: player.playerId,
+                        });
+                    }
                 };
             
                 // Verbindung starten (falls nicht aktiv)

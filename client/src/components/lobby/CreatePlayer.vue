@@ -22,10 +22,9 @@ async function registerPlayer() {
         });
         if(response){
             const { playerId, playerName, level} =  response.data;
+            sessionStorage.setItem('player',JSON.stringify({ playerId: playerId,playerName: playerName,level: level}));
             
-            playerStore.setPlayerId(playerId),
-            playerStore.setPlayerName(playerName);
-            playerStore.setPlayerLevel(level);
+            //playerStore.setPlayer(playerId,playerName,level)
             
             router.push('/lobby');
         }

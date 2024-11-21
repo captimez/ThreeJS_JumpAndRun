@@ -3,6 +3,7 @@ import JumpAndRunGame from '../components/JumpAndRunGame.vue'
 import StartView from '../views/StartView.vue'
 import HomeView from '../views/HomeView.vue'
 import Lobby from '../components/lobby/Lobby.vue'
+import LobbyView from '../views/LobbyView.vue'
 
 
 const router = createRouter({
@@ -25,7 +26,7 @@ const router = createRouter({
     },{
       path:'/lobby/:id',
       name: 'lobby',
-      component: Lobby,
+      component: LobbyView,
     }
   ]
 })
