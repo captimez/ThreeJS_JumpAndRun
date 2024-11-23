@@ -63,7 +63,7 @@ public class LobbyController {
         logger.info("Websocket request received" + player.getPlayerId());
         lobbyService.joinLobby(player.getPlayerId(), player.getPlayerName(), lobbyid);
         List<Player> players = lobbyService.getPlayersInLobby(lobbyid);
-        System.out.println("Sending updated player list: " + players);
+    
         messagingService.sendPlayerList(lobbyid, players);
     }
     
