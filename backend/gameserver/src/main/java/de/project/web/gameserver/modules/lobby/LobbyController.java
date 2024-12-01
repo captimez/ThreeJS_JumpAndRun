@@ -10,6 +10,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
 import java.util.List;
 
 import de.project.web.gameserver.modules.player.Player;
@@ -59,12 +61,31 @@ public class LobbyController {
     @MessageMapping("/lobby/{lobbyid}/join")
     @SendTo("topic/lobby/{lobbyid}")
     public void playerJoinLobby(Player player, @DestinationVariable String lobbyid){
+        HashMap<String,Object> response = new HashMap<String,Object>();
 
         logger.info("Websocket request received" + player.getPlayerId());
         lobbyService.joinLobby(player.getPlayerId(), player.getPlayerName(), lobbyid);
         List<Player> players = lobbyService.getPlayersInLobby(lobbyid);
+
+        response.put("type", "playerJoined");
+        response.put("data", players);
+
     
-        messagingService.sendPlayerList(lobbyid, players);
+        messagingService.sendPlayerList(lobbyid, response);
+    }
+
+    @MessageMapping("/lobby/{lobbyid}/start")
+    @SendTo("topic/lobby/{lobbyid}")
+    public void gameStart(Player player, @DestinationVariable String lobbyid){
+        HashMap<String,Object> response = new HashMap<String, Object>();
+
+        logger.info("Game: {} started", lobbyid);
+        lobbyService.startGame(lobbyid);
+
+        response.put("type", "gameStarted");
+        response.put("data", true);
+
+        messagingService.sendPlayerList(lobbyid, response);
     }
     
     
