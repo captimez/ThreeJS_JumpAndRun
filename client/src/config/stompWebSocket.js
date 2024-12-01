@@ -1,7 +1,9 @@
 import { Client } from '@stomp/stompjs';
 import { useLobbyStore } from '../stores/lobbyStore';
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 
 const stompClient = new Client({
   brokerURL: 'ws://localhost:8080/ws',
@@ -26,7 +28,15 @@ function subscribeToLobby(lobbyId,callback) {
     return;
   }
     stompClient.subscribe(`/topic/lobby/${lobbyId}`, (message) => {
-      callback(JSON.parse(message.body)); // Nachricht als JSON an den Callback übergeben
+      switch(message.body.type){
+        case "playerJoined": 
+          callback(JSON.parse(message.body.data));
+          break;
+        
+        case "gameStarted":
+          router.push(`${lobbyId}/game`)
+      }
+       // Nachricht als JSON an den Callback übergeben
     });
 }
 

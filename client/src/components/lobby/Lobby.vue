@@ -7,6 +7,7 @@
                 {{ player.playerName }}
             </li>
         </ul>
+        <button class="start-button" @click="startGame()">Start Game</button>
     </div>
 </template>
 
@@ -14,14 +15,21 @@
 import { onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useLobbyStore } from '../../stores/lobbyStore';
+import { sendMessage } from '../../config/stompWebSocket';
 
 const route = useRoute();
 const lobbyStore = useLobbyStore();
 const lobbyId = route.params["id"]; // Lobby-ID aus der URL
 const players = computed(() => lobbyStore.players); // Reaktive Bindung zur Spieler-Liste
 
+
+const startGame = () => {
+    sendMessage(`/app/lobby/${lobbyId}/start`,{
+        message: "start"
+    })
+}
+
 onMounted(() => {
-    
     lobbyStore.initWebsocket(lobbyId);
 });
 </script>
@@ -48,6 +56,13 @@ onMounted(() => {
     padding: 0;
     margin: 0 auto;
     width: 50%;
+}
+
+.start-button{
+    border-radius: 10px;
+    width: 40%;
+    padding: 15px;
+    background-color: rgb(40, 245, 118);
 }
 
 /* Einzelner Spieler-Eintrag */

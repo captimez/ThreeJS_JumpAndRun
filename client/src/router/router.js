@@ -20,7 +20,7 @@ const router = createRouter({
       component: HomeView,
     },
     {
-      path:'/game',
+      path:'/:id/game',
       name: 'Analyse',
       component: JumpAndRunGame,
     },{

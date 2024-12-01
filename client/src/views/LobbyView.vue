@@ -25,7 +25,7 @@ import Lobby from '../components/lobby/Lobby.vue';
 }
 
 .center {
-    width: 50%; /* Breite der Lobby-Komponente */
+    width: 100%; /* Breite der Lobby-Komponente */
     max-width: 800px; /* Maximale Breite */
     background-color: rgba(32, 32, 32, 0.5); /* Optionaler halbtransparenter Hintergrund */
     padding: 20px;
